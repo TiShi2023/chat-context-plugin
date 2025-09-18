@@ -1,10 +1,12 @@
 [project]
 name = "chat-context-plugin"
-version = "0.1.1"
+version = "0.1.2"
 description = "消息上下文插件"
-authors = [{name = "huchundong", email = "gycm520@gmail.com"}]
+authors = [{name = "lele", email = "1789335298@qq.com"}]
 dependencies = [
+    "alibabacloud_dingtalk",
 ]
 
 [project.entry-points."omni_bot.plugins"]
-chat-context-plugin = "chat_context_plugin.main:ChatContextPlugin" 
+chat-context-plugin = "chat_context_plugin.main:ChatContextPlugin"
+dingtalk_v2 = "dingtalk_v2"
