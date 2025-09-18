@@ -41,7 +41,7 @@ def read_whole_column(column: str, access_token: str, read_sheet: Sheet, union_i
 
 
 def write_row(write_range: str, values: list, token: str, write_sheet: Sheet, union_id: str, workbook_id: str,
-              sheet_id: str, background_colors: list = None) -> None:
+              sheet_id: str, background_colors: list = None, font_colors: list = None) -> None:
     """
     写入一行数据到指定的范围
     :param write_range: 写入的范围，例如 'A1:B2'
@@ -52,6 +52,7 @@ def write_row(write_range: str, values: list, token: str, write_sheet: Sheet, un
     :param sheet_id: 表格的 ID
     :param write_sheet: WriteSheet 实例
     :param background_colors: 背景颜色列表
+    :param font_colors: 字体颜色列表
     """
     write_sheet.write(
         token=token,
@@ -61,6 +62,7 @@ def write_row(write_range: str, values: list, token: str, write_sheet: Sheet, un
         sheet_id=sheet_id,
         range_address=write_range,
         background_colors=background_colors,
+        font_colors=font_colors
     )
 
 

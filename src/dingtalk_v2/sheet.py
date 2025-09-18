@@ -93,13 +93,15 @@ class Sheet:
                 # err 中含有 code 和 message 属性，可帮助开发定位问题
                 pass
 
-    def write(self, token, union_id, values, workbook_id, sheet_id, range_address, background_colors=None) -> None:
+    def write(self, token, union_id, values, workbook_id, sheet_id, range_address, background_colors=None,
+              font_colors=None) -> None:
         update_range_headers = dingtalkdoc__1__0_models.UpdateRangeHeaders()
         update_range_headers.x_acs_dingtalk_access_token = token
         update_range_request = dingtalkdoc__1__0_models.UpdateRangeRequest(
             operator_id=union_id,
             values=values,
             background_colors=background_colors,
+            font_colors=font_colors
         )
         try:
             self.client.update_range_with_options(workbook_id, sheet_id, range_address,

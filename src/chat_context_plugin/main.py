@@ -126,18 +126,20 @@ class ChatContextPlugin(Plugin):
         sessions = {}
         for session_id, messages in self.sessions_for_sheet.items():
             rows = []
-            colors = []
+            back_colors = []
+            font_colors = []
             for speaker_name, content in messages:
                 rows.append([speaker_name, content])
-                color = get_color(speaker_name)
-                colors.append([color, color])
-            sessions[session_id] = (rows, colors)
+                back_color, font_color = get_color(speaker_name)
+                back_colors.append([back_color, back_color])
+                font_colors.append([font_color, font_color])
+            sessions[session_id] = (rows, back_colors, font_colors)
 
         if not sessions:
             self.logger.info("没有新的会话消息需要保存到表格")
             return
 
-        for session_id, (rows, colors) in sessions.items():
+        for session_id, (rows, back_colors, font_colors) in sessions.items():
             if session_id not in self.sheet_list:
                 try:
                     create_sheet(self.access_token, self.union_id, self.workbook_id, session_id, self.sheet)
@@ -148,7 +150,7 @@ class ChatContextPlugin(Plugin):
             index = write_index(self.access_token, self.union_id, self.workbook_id, session_id, self.sheet)
             write_range = f"A{index}:B{index + len(rows) - 1}"
             write_row(write_range, rows, self.access_token, self.sheet, self.union_id, self.workbook_id, session_id,
-                      colors)
+                      back_colors, font_colors)
             self.logger.info(f"已将群聊 [{session_id}] {len(rows)} 条会话消息保存到表格")
 
     def clean_expired_sessions(self):
