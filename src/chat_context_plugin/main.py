@@ -86,6 +86,7 @@ class ChatContextPlugin(Plugin):
             day=configs[2],
             month=configs[3],
             day_of_week=configs[4],
+            misfire_grace_time=300,  # 宽限5分钟
         )
         scheduler.start()
         self.logger.info(
@@ -94,7 +95,7 @@ class ChatContextPlugin(Plugin):
 
     def register_clean_crontab(self):
         """
-        定时清理过期的会话消息
+        定时清理过期的会话消息，可宽限30分钟
         """
         if self.plugin_config.clean_crontab:
             configs = self.plugin_config.clean_crontab.split()
@@ -109,6 +110,7 @@ class ChatContextPlugin(Plugin):
             day=configs[2],
             month=configs[3],
             day_of_week=configs[4],
+            misfire_grace_time=1800,  # 宽限30分钟
         )
         scheduler.start()
         self.logger.info(
@@ -128,11 +130,11 @@ class ChatContextPlugin(Plugin):
             rows = []
             back_colors = []
             font_colors = []
-            for speaker_name, content in messages:
-                rows.append([speaker_name, content])
+            for speaker_name, content, str_time in messages:
+                rows.append([speaker_name, content, str_time])
                 back_color, font_color = get_color(speaker_name)
-                back_colors.append([back_color, back_color])
-                font_colors.append([font_color, font_color])
+                back_colors.append([back_color, back_color, back_color])
+                font_colors.append([font_color, font_color, font_color])
             sessions[session_id] = (rows, back_colors, font_colors)
 
         if not sessions:
@@ -148,7 +150,7 @@ class ChatContextPlugin(Plugin):
                 except Exception as e:
                     self.logger.error(f"创建新表格[{session_id}]失败: {e}")
             index = write_index(self.access_token, self.union_id, self.workbook_id, session_id, self.sheet)
-            write_range = f"A{index}:B{index + len(rows) - 1}"
+            write_range = f"A{index}:C{index + len(rows) - 1}"
             write_row(write_range, rows, self.access_token, self.sheet, self.union_id, self.workbook_id, session_id,
                       back_colors, font_colors)
             self.logger.info(f"已将群聊 [{session_id}] {len(rows)} 条会话消息保存到表格")
@@ -216,7 +218,8 @@ class ChatContextPlugin(Plugin):
                 self.sessions_for_sheet[session_name] = []
             self.sessions_for_sheet[session_name].append((
                 nickname,
-                formatted_message["content"]
+                formatted_message["content"],
+                message.str_time,
             ))
         return
 
