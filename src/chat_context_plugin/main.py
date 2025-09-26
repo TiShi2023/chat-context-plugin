@@ -216,7 +216,7 @@ class ChatContextPlugin(Plugin):
             nickname = message.contact.display_name
             try:
                 self.logger.info(f"群聊 [{session_name}] 用户 [{nickname}] 发送消息: {formatted_message['content']}")
-            except:
+            except UnicodeEncodeError:
                 self.logger.error("Decode Error")
             if session_name not in self.sessions_for_sheet:
                 self.sessions_for_sheet[session_name] = []
