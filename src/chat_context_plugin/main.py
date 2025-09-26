@@ -146,14 +146,14 @@ class ChatContextPlugin(Plugin):
                 try:
                     create_sheet(self.access_token, self.union_id, self.workbook_id, session_id, self.sheet)
                     self.sheet_list.append(session_id)
-                    self.logger.info(f"已创建新表格: {session_id}")
-                except Exception as e:
-                    self.logger.error(f"创建新表格[{session_id}]失败: {e}")
+                except Exception:
+                    self.logger.error(f"创建表格失败")
+                    continue
             index = write_index(self.access_token, self.union_id, self.workbook_id, session_id, self.sheet)
             write_range = f"A{index}:C{index + len(rows) - 1}"
             write_row(write_range, rows, self.access_token, self.sheet, self.union_id, self.workbook_id, session_id,
                       back_colors, font_colors)
-            self.logger.info(f"已将群聊 [{session_id}] {len(rows)} 条会话消息保存到表格")
+            print(f"已将群聊 [{session_id}] {len(rows)} 条会话消息保存到表格")
 
     def clean_expired_sessions(self):
         """
