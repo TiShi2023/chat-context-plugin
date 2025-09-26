@@ -214,6 +214,7 @@ class ChatContextPlugin(Plugin):
         if message.is_chatroom:
             session_name = message.room.display_name
             nickname = message.contact.display_name
+            self.logger(f"群聊 [{session_name}] 用户 [{nickname}] 发送消息: {formatted_message['content']}")
             if session_name not in self.sessions_for_sheet:
                 self.sessions_for_sheet[session_name] = []
             self.sessions_for_sheet[session_name].append((
