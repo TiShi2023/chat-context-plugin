@@ -11,6 +11,7 @@ from omni_bot_sdk.plugins.interface import (
 from pydantic import BaseModel
 
 from dingtalk_v2 import *
+from lark_sheet import LarkSheet
 from .utils import get_color
 
 class ChatContextPluginConfig(BaseModel):
@@ -29,6 +30,10 @@ class ChatContextPluginConfig(BaseModel):
     ding_app_secret: str = "unknown"
     union_id: str = "unknown"
     workbook_id: str = "unknown"
+
+    lark_app_id: str = "unknown"
+    lark_app_secret: str = "unknown"
+    lark_spreadsheet_token: str = "unknown"
 
 
 class ChatContextPlugin(Plugin):
@@ -62,6 +67,13 @@ class ChatContextPlugin(Plugin):
         self.sheet = Sheet()
         self.sheet_list = list_sheets(self.access_token, self.union_id, self.workbook_id, self.sheet)
         self.sessions_for_sheet = {}
+
+        # 飞书表格
+        self.lark_sheet = LarkSheet(
+            app_id=self.plugin_config.lark_app_id,
+            app_secret=self.plugin_config.lark_app_secret,
+            spreadsheet_token=self.plugin_config.lark_spreadsheet_token,
+        )
 
     def update_token(self):
         resp = self.oauth.main()
@@ -119,7 +131,7 @@ class ChatContextPlugin(Plugin):
 
     def save_sessions_to_sheet(self):
         """
-        将当前会话消息保存到钉钉表格中
+        将当前会话消息保存到钉钉表格和飞书表格中
         """
         if not self.sessions_for_sheet:
             self.logger.info("当前没有会话消息，无需保存到表格")
@@ -142,6 +154,7 @@ class ChatContextPlugin(Plugin):
             return
 
         for session_id, (rows, back_colors, font_colors) in sessions.items():
+            # 钉钉表格上传
             if session_id not in self.sheet_list:
                 try:
                     create_sheet(self.access_token, self.union_id, self.workbook_id, session_id, self.sheet)
@@ -153,7 +166,21 @@ class ChatContextPlugin(Plugin):
             write_range = f"A{index}:C{index + len(rows) - 1}"
             write_row(write_range, rows, self.access_token, self.sheet, self.union_id, self.workbook_id, session_id,
                       back_colors, font_colors)
-            print(f"已将群聊 [{session_id}] {len(rows)} 条会话消息保存到表格")
+            print(f"已将群聊 [{session_id}] {len(rows)} 条会话消息保存到钉钉表格")
+
+            # 飞书表格上传
+            try:
+                lark_sheet_id = self.lark_sheet.ensure_sheet(session_id)
+                if lark_sheet_id:
+                    success = self.lark_sheet.append_data(lark_sheet_id, rows)
+                    if success:
+                        print(f"已将群聊 [{session_id}] {len(rows)} 条会话消息保存到飞书表格")
+                    else:
+                        self.logger.error(f"飞书表格写入失败: {session_id}")
+                else:
+                    self.logger.error(f"飞书表格创建/获取sheet失败: {session_id}")
+            except Exception as e:
+                self.logger.error(f"飞书表格上传异常: {session_id}, {e}")
 
     def clean_expired_sessions(self):
         """
