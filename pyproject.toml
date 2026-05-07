@@ -5,6 +5,7 @@ description = "消息上下文插件"
 authors = [{name = "lele", email = "1789335298@qq.com"}]
 dependencies = [
     "alibabacloud_dingtalk",
+    "lark-oapi"
 ]
 
 [project.entry-points."omni_bot.plugins"]
